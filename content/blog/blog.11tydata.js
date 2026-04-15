@@ -3,4 +3,7 @@ export default {
 		"posts"
 	],
 	"layout": "layouts/post.njk",
+	eleventyComputed: {
+		year: data => new Date(data.date).getFullYear(),
+	}
 };
