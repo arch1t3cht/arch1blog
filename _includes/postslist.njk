@@ -1,6 +1,6 @@
 {%- set postslistIndex = postslist.length + 1 %}
 {%- for year, posts in postslist | groupby("data.year") | dictsort | reverse %}
-<h4>{{ year }}</h4>
+<h3>{{ year }}</h3>
 <ol reversed class="postlist" style="--postlist-index: {{ postslistIndex }}">
 {%- for post in posts | reverse %}
 	<li class="postlist-item{% if post.url == url %} postlist-item-active{% endif %}">
