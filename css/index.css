@@ -151,6 +151,7 @@ header {
 	list-style: "";
 	border-top: 1px dashed var(--color-gray-20);
 	padding: 1em 0;
+	margin-top: 3em;
 }
 .links-nextprev > * {
 	flex-grow: 1;
@@ -290,9 +291,12 @@ header {
 	gap: .5em;
 	list-style: none;
 	padding: 0;
-	margin: 0;
+	margin: 0 0 2em 0;
 }
 .post-metadata time {
 	margin-right: 1em;
 }
 
+.footnotes-sep {
+	margin-top: 2.5em;
+}
