@@ -3,7 +3,7 @@ title: A Programmer's Guide to Karaoke Templaters
 description: An example-driven guide to get started with karaoke templaters in Aegisub
 date: 2022-06-26
 realdate: 2026-04-15
-tags: external, guide, subtitling
+tags: external,guide,subtitling
 ---
 
 I wrote a guide explaining how Aegisub's karaoke templaters work by going through a simple example.

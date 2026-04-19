@@ -3,7 +3,7 @@ title: The Math Behind Perspective in .ass Subtitles
 description: An old post explaining how perspective transformations work in ASS subtitles
 date: 2022-08-11
 realdate: 2026-04-15
-tags: external, subtitling
+tags: external,subtitling
 ---
 
 I'll be honest, I completely forgot about this page and only rediscovered it now when going through all my old ramblings so I could link them on this blog.

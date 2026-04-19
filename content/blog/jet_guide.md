@@ -3,7 +3,7 @@ title: The JET Guide
 description: Encoding guide project by the JET group
 date: 2024-05-08
 realdate: 2026-04-15
-tags: external, guide, encoding
+tags: external,guide,encoding
 ---
 
 There have been multiple attempts ([guide.encode.moe](https://guide.encode.moe/) and [the silentaperture guide](https://silentaperture.gitlab.io/mdbook-guide/introduction.html)[^unpublished]) at making a guide for modern anime encoding in the past,
