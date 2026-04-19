@@ -67,7 +67,7 @@ The full list of NAL unit types can be found in ITU-T Rec H.264, Table 7-1, but 
     since FFmpeg has several code paths that check what version (if any) of x264 produced a stream
     and apply special handling for bugs in old x264 versions producing slightly incorrect files.
 
-    Most notably, before x264 version 151, x264 would output broken streams when incoding in 4:4:4 chroma,
+    Most notably, before x264 version 151, x264 would output broken streams when encoding in 4:4:4 chroma,
     and FFmpeg would decode them in an equally incorrect way, resulting in a "correct" decode.
     Both FFmpeg and x264 were [fixed](https://code.FFmpeg.org/FFmpeg/FFmpeg/commit/840b41b2a643fc8f0617c0370125a19c02c6b586),
     but many broken files produced by x264 still existed in the wild,
