@@ -13,7 +13,7 @@ The following two links should be mandatory reading/watching for anyone working 
 Today I'd like to talk about another edge case along these lines.
 I have encountered[^encountered] it in the wild a couple of times,
 and I've seen it surprise some fairly experienced developers.
-In particular, some of the Common Tools handle this incorrectly.
+In particular, some of the Common Tools handle this incorrectly in some cases.
 
 [^encountered]: Meaning, "Someone else encountered a file breaking their source filter and sent it to me to investigate."
 
@@ -255,7 +255,7 @@ Hence, if you encounter such a file, you can remux it using mkvtoolnix to "fix" 
 In fact, if you really want to, you could even mux the video back to an m2ts afterwards.
 But you really shouldn't.
 
-FFmpeg and MakeMKV, on the other hand, do not do any special handling for this at all[^bugreport].
+FFmpeg and MakeMKV, on the other hand, do not do any special handling for this at all[^bugreport] when remuxing.
 As such, remuxing such an m2ts file with one of these tools will result in an mkv file that has packets marked as keyframes that are not actually random access points.
 Now, as with many other things, the Matroska specification is not really clear about what a "keyframe" actually *is*, but the general convention does seem to be "random access point"
 (and, following the battle-tested strategy of "when in doubt, just copy MP4," the probably-equivalent MP4 feature would be the `stss` box, which *does* explicitly specify keyframes to be "random access points.").
@@ -275,3 +275,28 @@ In conclusion, video is hard and everything is broken. What's new.
 
 
 If I got anything about this wrong, please comment and let me know.
+
+---
+
+*Update, two hours later*: Ridley points out that FFmpeg does actually have a bitstream filter [h264_redundant_pps](https://ffmpeg.org/ffmpeg-all.html#h264_005fredundant_005fpps)
+that is designed to fix precisely the sort of Blu-ray streams described above.
+(I know for a fact that I looked for FFmpeg BSFs to fix these streams back when I initially investigated this,
+but I must have missed this one or forgotten about it.)
+
+Hence, you can fix such a file using e.g. `ffmpeg -i foo.mkv -c copy -bsf:v h264_redundant_pps out.mkv`,
+give or take some extra `-map` arguments to actually copy all streams.
+
+Specifically, this filter will set the `pic_init_qp_minus26` of every PPS to 0 (and `weighted_pred_flag` to 1)
+and adjust the `slice_qp_delta` of all slices to match.
+This is enough to make all the differing PPS's of these types of Blu-ray streams agree, but of course it may not work for a general file.
+
+And, in fact, the plot thickens further:
+There's also the `h264_mp4toannexb` bitstream filter, which, similarly to mkvtoolnix, will insert copies of the parameter sets before every IDR frame.
+(Naturally, this is in no way mentiond in the documentation, which is why I only now found out about it.)
+Moreover, this BSF is automatically inserted when outputting an m2ts or raw h264 file with ffmpeg.
+And, indeed, I can verify that, after a command like `ffmpeg -i foo.m2ts -c copy bar.m2ts`, all IDR access units contain parameter sets.
+
+...Except that the resulting files still somehow corrupt when decoding.
+They seem *better* than before - in particular mpv no longer *shows* corrupted frames, it just skips some - but ffmpeg still logs decoding errors and source filters still output corrupted frames.
+I don't yet understand why these files are still broken, but I'll go to bed for today.
+See you tomorrow, maybe.
