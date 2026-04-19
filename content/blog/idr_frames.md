@@ -241,10 +241,8 @@ As far as I can see, there are three options:
 
 1. Patch the bitstream to give all of these parameter sets different IDs and update the references to the parameter sets accordingly,
    then add all the parameter sets in the header.
-
-   Apart from needing to edit the H.264 bitstream, which most muxing tools try to avoid, this also only allows for 31 different PPS's
-   due to the format of the `AVCDecoderConfigurationRecord` structure.
 2. Not mark IDR access units that do not contain the required parameter sets as keyframes in the resulting container.
+
    This would result in a "correct" file, but it wouldn't actually help source FFmpeg-based filters and players:
    When demuxing a file, ffmpeg will also parse the resulting packets and update its flags accordingly.
    With its current behavior, when it sees an H.264 packet containing an IDR slice, it will set the packet's `AV_PKT_FLAG_KEY`,
