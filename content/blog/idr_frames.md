@@ -291,12 +291,39 @@ and adjust the `slice_qp_delta` of all slices to match.
 This is enough to make all the differing PPS's of these types of Blu-ray streams agree, but of course it may not work for a general file.
 
 And, in fact, the plot thickens further:
-There's also the `h264_mp4toannexb` bitstream filter, which, similarly to mkvtoolnix, will insert copies of the parameter sets before every IDR frame.
-(Naturally, this is in no way mentiond in the documentation, which is why I only now found out about it.)
-Moreover, this BSF is automatically inserted when outputting an m2ts or raw h264 file with ffmpeg.
-And, indeed, I can verify that, after a command like `ffmpeg -i foo.m2ts -c copy bar.m2ts`, all IDR access units contain parameter sets.
+FFmpeg's m2ts muxer actually does [insert copies of the parameter sets before every IDR picture](https://code.ffmpeg.org/FFmpeg/FFmpeg/src/commit/5e69e6d49c95ebe8e31849b28cea16894fd23e2e/libavformat/mpegtsenc.c#L1920-L1971).
+After all, it *needs* to do this when muxing from an mp4 or mkv file where the parameter sets are only stored in the header.
+m2ts files are transport streams and thus have no such "header", so the parameter sets need to be inserted back into the actual access units.
 
-...Except that the resulting files still somehow corrupt when decoding.
-They seem *better* than before - in particular mpv no longer *shows* corrupted frames, it just skips some - but ffmpeg still logs decoding errors and source filters still output corrupted frames.
-I don't yet understand why these files are still broken, but I'll go to bed for today.
-See you tomorrow, maybe.
+Unfortunately, the muxer does this incorrectly in the harder cases:
+Instead of scanning through the stream and keeping track of what the last stored parameter sets were,
+it simply inserts the parameter sets contained in the header (i.e. the `extradata`) into every IDR access unit that does not already contain parameter sets.
+For the Blu-ray streams above, where there exist multiple different parameter sets with the same ID,
+this means that the resulting m2ts files may not simply be *missing* parameter sets before some IDR frames, but have the *wrong* parameter sets in some IDR access units.
+That is, the resulting streams will not just be hard to seek in, but be genuinely broken.
+
+I guess I'll see if I can open some bug reports and/or try to fix some of these issues.
+
+As a summary of the current situation:
+
+1. Not all IDR frames are random access points.
+   There is no easy way *in general* to determine which IDR frames in a raw H.264 stream or m2ts file are random access points[^determine],
+   but "If there are recovery point SEIs, rely on those, and fall back to 'all IDR frames' otherwise" should work for most cases in the wild.
+   However, ffmpeg provides no way to distinguish between SEI recovery points and IDR frames, so players and source filters will struggle on such streams.
+
+   The following points will go into detail about how such files can be made easier to seek in with further processing,
+   but none of them will improve this situation for players or source filters on the *original* streams.
+1. A *general* H.264 stream can have very pathological orders of parameter sets.
+   However, the only case I have so far heard of or encountered in the wild are Blu-ray streams that have parameter sets differing only in `pic_init_qp_minus26`.
+1. Some container formats like mp4 (but *not* m2ts) may have additional restrictions on the order of parameter sets, so streams in those may be better behaved.
+1. A remux using mkvtoolnix will fix[^fix] the parameter set ordering of any stream when remuxing from a format different from mkv.
+1. A remux to mkv using FFmpeg (with no additional BSFs) or MakeMKV will *not* fix the parameter set ordering, and thus result in files where some packets marked as keyframes are not actually random access points.
+   However, such files can still be fixed with further remuxing.
+1. The specific case of the Blu-ray streams described above can be fixed using FFmpeg's `h264_redundant_pps` BSF.
+   This works in any container, i.e. both in m2ts files (or even raw h264 files) *and* in mkv files, even if they have incorrect keyframe flags.
+1. Remuxing one of the Blu-ray streams described above to m2ts using FFmpeg will result in a **broken** m2ts file that cannot be fixed.
+
+[^determine]: Where "easy" means "without indexing the entire stream and parsing all parameter sets and slice headers."
+[^fix]: Where "fix" means "output an mkv file where every IDR frame is a random access point."
+
+For somebody running into such a Blu-ray stream, the current advice is hence to remux it using mkvtoolnix and/or to run it through the `h264_redundan_pps` BSF.
