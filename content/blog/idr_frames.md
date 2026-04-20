@@ -326,4 +326,4 @@ As a summary of the current situation:
 [^determine]: Where "easy" means "without indexing the entire stream and parsing all parameter sets and slice headers."
 [^fix]: Where "fix" means "output an mkv file where every IDR frame is a random access point."
 
-For somebody running into such a Blu-ray stream, the current advice is hence to remux it using mkvtoolnix and/or to run it through the `h264_redundan_pps` BSF.
+For somebody running into such a Blu-ray stream, the current advice is hence to remux it using mkvtoolnix and/or to run it through the `h264_redundant_pps` BSF.
