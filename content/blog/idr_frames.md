@@ -327,3 +327,30 @@ As a summary of the current situation:
 [^fix]: Where "fix" means "output an mkv file where every IDR frame is a random access point."
 
 For somebody running into such a Blu-ray stream, the current advice is hence to remux it using mkvtoolnix and/or to run it through the `h264_redundant_pps` BSF.
+
+---
+
+*Next update, two days later*:
+And, of course, that's still not everything.
+FFmpeg also has *another* bitstream filter called `h264_mp4toannexb` that will convert a stream of NAL units in the format that an mp4 or mkv file expects (with a length field for every NAL unit) into the format used in raw .h264 bytestreams or m2ts files (with NAL units being separated by start codes as in Annex B of the H.264 specification).
+Apart from converting length fields to start codes, this BSF will also insert copies of the parameter sets before the IDR access units, similarly to what mkvtoolnix does.
+Unlike the m2ts muxer, which simply inserts the possibly incorrect parameter sets from the extradata, `h264_mp4toannnexb` does properly scan the stream for parameter sets and remembers the most recent paramter sets found in the stream[^annexbsets].
+
+[^annexbsets]: It doesn't actually remember the parameter sets by their *ID*, and instead just remembers the set of parameter sets found in the last packet that contained *any* parameter sets, but this works in all reasonable cases.
+
+...Except that `h264_mp4toannexb` also does not fully work.
+More precisely, at the time of writing it fails to insert parameter sets when there are multiple *consecutive* IDR access units, since it only inserts the parameter sets at most once for every sequence of NAL units with no non-IDR slices in between.
+
+The `h264_mp4toannexb` BSF is automatically inserted when remuxing from an mp4-style container to an Annex B-style container, but not when the input is already in Annex B-format (and it cannot be manually inserted in that case either).
+So a remux from mp4 or mkv to m2ts will run this BSF, while a remux from m2ts to m2ts will not.
+So what I wrote in the last update remains valid - in particular a remux from m2ts to m2ts will result in a broken file when the input has multiple different parameter sets with the same ID.
+However, an FFmpeg remux from m2ts to mkv, followed by a remux from mkv to m2ts will result in an intact file that just happens to still have some IDR access units without parameter sets.
+
+But why doesn't the m2ts muxer then insert the extradata's parameter sets into those access units, you might ask?
+Because for some reason, the m2ts muxer still gets its extradata in mp4 format rather than its Annex B-format, even though it ran the `h264_mp4toannexb` BSF.
+So it will not add the extradata in this case since it has the wrong format.
+Why is the extradata still in mp4 format even though the BSF converted it?
+Who knows.
+This is probably not supposed to be the case, even if it does prevent breaking the output here.
+
+Throw a rock, hit three FFmpeg bugs.
