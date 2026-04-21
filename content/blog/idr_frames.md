@@ -347,7 +347,7 @@ So what I wrote in the last update remains valid - in particular a remux from m2
 However, an FFmpeg remux from m2ts to mkv, followed by a remux from mkv to m2ts will result in an intact file that just happens to still have some IDR access units without parameter sets.
 
 But why doesn't the m2ts muxer then insert the extradata's parameter sets into those access units, you might ask?
-Because for some reason, the m2ts muxer still gets its extradata in mp4 format rather than its Annex B-format, even though it ran the `h264_mp4toannexb` BSF.
+Because, for some reason, the m2ts muxer still gets its extradata in mp4 format rather than its Annex B-format, even though it ran the `h264_mp4toannexb` BSF.
 So it will not add the extradata in this case since it has the wrong format.
 Why is the extradata still in mp4 format even though the BSF converted it?
 Who knows.
