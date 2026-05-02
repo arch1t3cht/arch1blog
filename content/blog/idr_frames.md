@@ -256,10 +256,8 @@ In fact, if you really want to, you could even mux the video back to an m2ts aft
 But you really shouldn't.
 
 FFmpeg and MakeMKV, on the other hand, do not do any special handling for this at all[^bugreport] when remuxing.
-As such, remuxing such an m2ts file with one of these tools will result in an mkv file that has packets marked as keyframes that are not actually random access points.
-Now, as with many other things, the Matroska specification is not really clear about what a "keyframe" actually *is*, but the general convention does seem to be "random access point"
-(and, following the battle-tested strategy of "when in doubt, just copy MP4," the probably-equivalent MP4 feature would be the `stss` box, which *does* explicitly specify keyframes to be "random access points.").
-So one could consider these produced files to be "broken."
+As such, remuxing such an m2ts file with one of these tools will result in an mkv file that has packets marked as keyframes that are not actually random access points,
+which violates the Matroska specification.
 
 [^bugreport]: And while writing this I now realize that I never made an actual bug report about this to either of those two programs, and now I feel bad.
     I do generally make an effort to report all the bugs I find, since I do very much dislike the practice of complaining about bugs on random discord servers without ever reporting them,
@@ -267,7 +265,7 @@ So one could consider these produced files to be "broken."
     I'll see if I can make a bug report soon, I guess.
     At the very least, it's hopefully clear that I am writing about this because it's an interesting and educational story, not because I want to complain about any of these tools.
 
-Unfortunately, it doesn't seem possible to fix an existing "broken" mkv file with a direct mkvtoolnix remux.
+Unfortunately, it doesn't seem possible to fix an existing mkv file that is "broken" in this way with a direct mkvtoolnix remux.
 Instead, the video needs to be demuxed and muxed from scratch again,
 which results in additional headaches when the video track has other metadata (frame rates, DAR, track flags, etc) that may get lost during a demux and remux.
 
