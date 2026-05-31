@@ -243,7 +243,7 @@ As far as I can see, there are three options:
    then add all the parameter sets in the header.
 2. Not mark IDR access units that do not contain the required parameter sets as keyframes in the resulting container.
 
-   This would result in a "correct" file, but it wouldn't actually help source FFmpeg-based filters and players:
+   This would result in a "correct" file, but it wouldn't actually help FFmpeg-based filters and players:
    When demuxing a file, ffmpeg will also parse the resulting packets and update its flags accordingly.
    With its current behavior, when it sees an H.264 packet containing an IDR slice, it will set the packet's `AV_PKT_FLAG_KEY`,
    even if the packet was not marked as a keyframe in the container.
