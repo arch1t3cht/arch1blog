@@ -6,6 +6,7 @@
 
 /* Theme colors */
 :root {
+	--color-bg-gray-10: #f0f0f0;
 	--color-gray-20: #e0e0e0;
 	--color-gray-50: #C0C0C0;
 	--color-gray-90: #333;
@@ -22,6 +23,7 @@
 
 @media (prefers-color-scheme: dark) {
 	:root {
+		--color-bg-gray-10: #1b2938;
 		--color-gray-20: #e0e0e0;
 		--color-gray-50: #C0C0C0;
 		--color-gray-90: #dad8d8;
@@ -307,6 +309,11 @@ blockquote {
 	padding-left: 20px;
 	padding-right: 20px;
 	border-left: 5px solid var(--color-gray-50);
+}
+
+code {
+	white-space: nowrap;
+	background-color: var(--color-bg-gray-10);
 }
 
 li {
