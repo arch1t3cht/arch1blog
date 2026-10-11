@@ -257,8 +257,9 @@ But if you need a more concrete set of guidelines, I've been sticking to the fol
     - It is not likely to ever get close to `INT_MAX`.
     - None of the clauses below apply.
 - If my number has a realistic chance of going above `INT_MAX`, use `int64_t`.
-- If my number occurs in a large number of instances in a performance-critical context,
-  use the smallest (signed!) integer type that can represent all values (but beware of premature optimization).
+- If my number is used in some performance-critical context, use the type that gives the best performance (as backed up by actual benchmarks; beware of premature optimization).
+  Usually this is the smallest type that fits all values or the native word width, depending on what the relevant bottleneck is.
+	Use signed types unless there is a concrete reason not to.
 - Only ever use unsigned integers in one of the following cases:
     - When using bit flags or parsing/writing bitwise formats.
     - When I very explicitly need mod-power-of-two arithmetic and do not plan on ever comparing two of these numbers.
